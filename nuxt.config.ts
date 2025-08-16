@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     "@nuxtjs/tailwindcss",
   ],
 
-  css: ["~/assets/css/custom.css"],
+  css: ["~/assets/css/tailwind.css"],
 
   components: [
     {
