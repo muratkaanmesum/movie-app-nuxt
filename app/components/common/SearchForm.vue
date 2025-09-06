@@ -17,8 +17,7 @@ defineProps({
   },
   inputClass: {
     type: String,
-    default:
-      "w-full bg-white rounded-4xl placeholder:text-gray-700 h-12 pl-5 text-black outline-none",
+    default: "",
   },
 });
 
@@ -51,12 +50,13 @@ const clearSearch = () => {
     <input
       v-model="inputValue"
       type="text"
+      class="w-full bg-white rounded-4xl placeholder:text-gray-700 h-12 pl-5 text-black outline-none"
       :class="inputClass"
       :placeholder="placeholder"
       @input="handleInput"
       @blur="handleBlur"
     />
-    <div v-if="inputValue" class="absolute right-0 h-full flex items-center">
+    <div v-if="inputValue" class="absolute right-0 h-full flex items-center border">
       <button
         type="button"
         class="text-gray-400 hover:text-gray-600 mx-2"

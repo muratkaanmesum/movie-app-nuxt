@@ -3,6 +3,14 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
 
+  // SSR is enabled by default in Nuxt 3, but we can explicitly set it
+  ssr: true,
+
+  // Nitro configuration for server-side rendering
+  nitro: {
+    preset: "node-server", // Use node-server for better SSR support
+  },
+
   modules: [
     "@nuxt/content",
     "@nuxt/eslint",
@@ -24,8 +32,6 @@ export default defineNuxtConfig({
   vue: {
     compilerOptions: {
       isCustomElement: (tag) => {
-        // Add any custom elements you want to exclude from Vue component resolution
-        // For example, if you're using web components or custom HTML elements
         return (
           tag.startsWith("my-") ||
           tag.startsWith("custom-") ||

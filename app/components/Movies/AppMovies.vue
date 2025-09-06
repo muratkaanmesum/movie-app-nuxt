@@ -5,7 +5,9 @@ import { watch } from "vue";
 import AppLoader from "../common/AppLoader.vue";
 
 const movieStore = useMovieStore();
-movieStore.fetchMovies();
+
+// Initialize movies on both server and client
+await movieStore.fetchMovies();
 
 watch([() => movieStore.page.value, () => movieStore.type.value], () => {
   movieStore.fetchMovies();

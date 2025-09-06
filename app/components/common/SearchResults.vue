@@ -16,7 +16,7 @@ defineEmits<{
 <template>
   <div
     v-if="showResults || isLoading"
-    class="absolute z-32 mt-1 w-full bg-white rounded-lg shadow-lg max-h-64 overflow-y-auto"
+    class="absolute z-32 mt-1 w-full bg-white rounded-lg shadow-lg max-h-64 overflow-y-auto z-50"
     @mousedown.prevent
   >
     <div v-if="isLoading" class="flex justify-center items-center py-4">

@@ -40,25 +40,23 @@ export const useMovieStore = () => {
   const fetchMovies = async () => {
     loading.value = true;
     try {
-      const config = useRuntimeConfig();
-
-      const response = await $fetch<MovieResponse>(
-        `https://api.themoviedb.org/3/movie/${type.value}`,
+      // Use our server API route for better SSR support
+      const { data } = await useFetch<MovieResponse>(
+        `/api/movies/${type.value}`,
         {
           params: {
-            include_adult: false,
-            include_video: false,
-            language: "en-US",
             page: page.value,
-            sort_by: "popularity.desc",
-            api_key: config.public.tmdbApiKey,
           },
-          headers: {
-            accept: "application/json",
-          },
+          // Add key for proper caching and SSR
+          key: `movies-${type.value}-${page.value}`,
+          // Server-side caching
+          server: true,
         }
       );
-      setMovies(response.results);
+
+      if (data.value) {
+        setMovies(data.value.results);
+      }
     } catch (error) {
       console.error(error);
     }

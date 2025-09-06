@@ -38,7 +38,8 @@ export const useSearchStore = () => {
     try {
       const config = useRuntimeConfig();
 
-      const response = await $fetch<SearchResponse>(
+      // Use useFetch for better SSR support, but only on client side for search
+      const { data } = await useFetch<SearchResponse>(
         "https://api.themoviedb.org/3/search/movie",
         {
           params: {
@@ -51,20 +52,25 @@ export const useSearchStore = () => {
           headers: {
             accept: "application/json",
           },
+          key: `search-${query}`,
+          // Only fetch on client for search functionality
+          server: false,
         }
       );
 
-      searchResults.value = response.results
-        .map((movie: Movie) => ({
-          id: movie.id,
-          title: movie.title,
-          type: "movie" as const,
-          poster_path: movie.poster_path,
-          release_date: movie.release_date,
-        }))
-        .slice(0, 8);
+      if (data.value) {
+        searchResults.value = data.value.results
+          .map((movie: Movie) => ({
+            id: movie.id,
+            title: movie.title,
+            type: "movie" as const,
+            poster_path: movie.poster_path,
+            release_date: movie.release_date,
+          }))
+          .slice(0, 8);
 
-      showResults.value = searchResults.value.length > 0;
+        showResults.value = searchResults.value.length > 0;
+      }
     } catch (error) {
       console.error("Error searching movies:", error);
       searchResults.value = [];

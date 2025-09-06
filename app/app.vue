@@ -1,6 +1,41 @@
 <script setup lang="ts">
 import { debounce } from "~/utils/utils";
 
+// SEO and meta tags for SSR
+useHead({
+  title: "Movie App - Discover Movies and TV Shows",
+  meta: [
+    {
+      name: "description",
+      content:
+        "Discover millions of movies and TV shows. Explore trending, popular, and top-rated content.",
+    },
+    {
+      property: "og:title",
+      content: "Movie App - Discover Movies and TV Shows",
+    },
+    {
+      property: "og:description",
+      content:
+        "Discover millions of movies and TV shows. Explore trending, popular, and top-rated content.",
+    },
+    {
+      property: "og:type",
+      content: "website",
+    },
+    {
+      name: "twitter:card",
+      content: "summary_large_image",
+    },
+  ],
+  link: [
+    {
+      rel: "canonical",
+      href: "https://your-domain.com",
+    },
+  ],
+});
+
 const searchStore = useSearchStore();
 
 const handleSearch = debounce((query: string) => {
@@ -30,6 +65,7 @@ const handleSearch = debounce((query: string) => {
           </div>
           <div class="relative">
             <SearchForm
+              input-class="rounded-[24px]"
               @search="handleSearch"
               @blur="searchStore.closeResults"
             />
