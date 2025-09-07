@@ -59,12 +59,12 @@ const navItems: NavItem[] = [
           :key="item.label"
           class="relative group h-full flex items-center"
         >
-          <RouterLink
+          <NuxtLink
             :to="item.path"
             class="hover:text-blue-300 transition-colors duration-200 py-3 px-2 block whitespace-nowrap"
           >
             {{ item.label }}
-          </RouterLink>
+          </NuxtLink>
 
           <!-- Dropdown Menu -->
           <div
@@ -74,14 +74,14 @@ const navItems: NavItem[] = [
             <div
               class="bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-2"
             >
-              <RouterLink
+              <NuxtLink
                 v-for="dropdownItem in item.dropdown"
                 :key="dropdownItem.path"
                 :to="dropdownItem.path"
                 class="block px-4 py-3 text-sm text-gray-200 hover:bg-gray-800 hover:text-blue-300 transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg"
               >
                 {{ dropdownItem.label }}
-              </RouterLink>
+              </NuxtLink>
             </div>
           </div>
         </div>
