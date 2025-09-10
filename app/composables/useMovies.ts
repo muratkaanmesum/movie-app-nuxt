@@ -37,7 +37,8 @@ export interface SortOption {
 export const useMovies = (
   apiEndpoint: string,
   defaultSort: string = "popularity.desc",
-  defaultMinRating: number = 0
+  defaultMinRating: number = 0,
+  filterType?: "upcoming" | "now_playing"
 ) => {
   const movies = ref<Movie[]>([]);
   const loading = ref(false);
@@ -47,8 +48,14 @@ export const useMovies = (
   const sortBy = ref(defaultSort);
   const selectedGenres = ref<number[]>([]);
   const minRating = ref(defaultMinRating);
-  const minYear = ref(1900);
-  const maxYear = ref(new Date().getFullYear());
+  const minYear = ref(
+    filterType === "upcoming" ? new Date().getFullYear() : 1900
+  );
+  const maxYear = ref(
+    filterType === "upcoming"
+      ? new Date().getFullYear() + 3
+      : new Date().getFullYear()
+  );
 
   const genres: Genre[] = [
     { id: 28, name: "Action" },
@@ -85,9 +92,15 @@ export const useMovies = (
         case "vote_average.asc":
           return a.vote_average - b.vote_average;
         case "release_date.desc":
-          return new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
+          return (
+            new Date(b.release_date).getTime() -
+            new Date(a.release_date).getTime()
+          );
         case "release_date.asc":
-          return new Date(a.release_date).getTime() - new Date(b.release_date).getTime();
+          return (
+            new Date(a.release_date).getTime() -
+            new Date(b.release_date).getTime()
+          );
         case "original_title.asc":
           return a.original_title.localeCompare(b.original_title);
         case "original_title.desc":
@@ -101,6 +114,20 @@ export const useMovies = (
 
   const filterMovies = (movies: Movie[]): Movie[] => {
     let filtered = [...movies];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (filterType === "now_playing") {
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+
+      filtered = filtered.filter((movie) => {
+        const releaseDate = new Date(movie.release_date);
+        releaseDate.setHours(0, 0, 0, 0);
+        return releaseDate >= thirtyDaysAgo && releaseDate <= today;
+      });
+    }
 
     if (selectedGenres.value.length > 0) {
       filtered = filtered.filter((movie) =>
@@ -158,8 +185,11 @@ export const useMovies = (
     sortBy.value = defaultSort;
     selectedGenres.value = [];
     minRating.value = defaultMinRating;
-    minYear.value = 1900;
-    maxYear.value = new Date().getFullYear();
+    minYear.value = filterType === "upcoming" ? new Date().getFullYear() : 1900;
+    maxYear.value =
+      filterType === "upcoming"
+        ? new Date().getFullYear() + 3
+        : new Date().getFullYear();
     currentPage.value = 1;
   };
 

@@ -13,9 +13,12 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'update:selected-genres', value: number[]): void;
-  (e: 'update:min-rating' | 'update:min-year' | 'update:max-year', value: number): void;
-  (e: 'clear' | 'apply'): void;
+  (e: "update:selected-genres", value: number[]): void;
+  (
+    e: "update:min-rating" | "update:min-year" | "update:max-year",
+    value: number
+  ): void;
+  (e: "clear" | "apply"): void;
 }
 
 defineProps<Props>();
@@ -54,11 +57,11 @@ defineEmits<Emits>();
                   const value = parseInt(target.value);
                   const newGenres = target.checked
                     ? [...selectedGenres, value]
-                    : selectedGenres.filter(id => id !== value);
+                    : selectedGenres.filter((id) => id !== value);
                   $emit('update:selected-genres', newGenres);
                 }
               "
-            >
+            />
             <span class="text-sm">{{ genre.name }}</span>
           </label>
         </div>
@@ -74,8 +77,13 @@ defineEmits<Emits>();
             max="10"
             step="0.5"
             class="flex-1 accent-blue-500"
-            @input="$emit('update:min-rating', parseFloat(($event.target as HTMLInputElement).value))"
-          >
+            @input="
+              $emit(
+                'update:min-rating',
+                parseFloat(($event.target as HTMLInputElement).value)
+              )
+            "
+          />
           <span class="text-sm">{{ minRating }}+</span>
         </div>
       </div>
@@ -90,8 +98,13 @@ defineEmits<Emits>();
             :max="maxYear"
             class="w-20 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm"
             placeholder="From"
-            @input="$emit('update:min-year', parseInt(($event.target as HTMLInputElement).value))"
-          >
+            @input="
+              $emit(
+                'update:min-year',
+                parseInt(($event.target as HTMLInputElement).value)
+              )
+            "
+          />
           <span class="text-gray-400 self-center">to</span>
           <input
             :value="maxYear"
@@ -100,8 +113,13 @@ defineEmits<Emits>();
             :max="new Date().getFullYear()"
             class="w-20 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm"
             placeholder="To"
-            @input="$emit('update:max-year', parseInt(($event.target as HTMLInputElement).value))"
-          >
+            @input="
+              $emit(
+                'update:max-year',
+                parseInt(($event.target as HTMLInputElement).value)
+              )
+            "
+          />
         </div>
       </div>
 

@@ -20,7 +20,9 @@ defineProps<Props>();
 <template>
   <div class="flex-1">
     <div v-show="!loading">
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8">
+      <div
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-8"
+      >
         <AppMovie
           v-for="movie in movies"
           :id="movie.id"

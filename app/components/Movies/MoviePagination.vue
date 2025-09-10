@@ -6,7 +6,7 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'update:current-page', value: number): void;
+  (e: "update:current-page", value: number): void;
 }
 
 defineProps<Props>();
@@ -43,7 +43,10 @@ defineEmits<Emits>();
     <button
       :disabled="currentPage >= totalPages || loading"
       class="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded transition-colors"
-      @click="currentPage < totalPages && $emit('update:current-page', currentPage + 1)"
+      @click="
+        currentPage < totalPages &&
+        $emit('update:current-page', currentPage + 1)
+      "
     >
       Next
       <svg
