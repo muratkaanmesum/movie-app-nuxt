@@ -39,6 +39,14 @@ const navItems: NavItem[] = [
     dropdown: [{ label: "Popular People", path: "/people/popular" }],
   },
   {
+    label: "Search",
+    path: "/search",
+  },
+  {
+    label: "Favorites",
+    path: "/favorites",
+  },
+  {
     label: "More",
     path: "/more",
   },

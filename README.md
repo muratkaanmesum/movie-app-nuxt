@@ -1,15 +1,60 @@
-# Movie App - Nuxt 3 with SSR
+# 🎬 Movie & TV Database - Nuxt 3 Application
 
-A modern movie discovery application built with Nuxt 3, featuring Server-Side Rendering (SSR) for improved performance and SEO.
+A comprehensive movie and TV series tracking web application built with Nuxt 3, similar to The Movie Database (TMDB). This application allows users to discover, search, and track their favorite movies and TV shows with detailed information, ratings, and cast details.
 
-## Features
+## ✨ Features
 
-- **Server-Side Rendering (SSR)** - Fast initial page loads and SEO optimization
-- **Movie Discovery** - Browse popular and top-rated movies
-- **Real-time Search** - Search movies with debounced API calls
-- **Responsive Design** - Tailwind CSS for modern, mobile-first design
-- **Movie Details** - View ratings, release dates, and movie posters
-- **Infinite Pagination** - Navigate through different pages of movies
+### 🎥 Dynamic Movie Pages
+
+- **Individual Movie Pages**: Each movie has its own dynamic route (`/movies/{id}`)
+- **Comprehensive Details**: Movie poster, user score, overview, cast, crew, videos, and production info
+- **User Ratings**: Visual rating display with percentage scores
+- **Cast & Crew**: Detailed cast information with profile pictures and character names
+- **Videos & Trailers**: Embedded YouTube trailers and promotional videos
+- **Production Companies**: Display of production companies with logos
+
+### 📺 TV Show Support
+
+- **Dynamic TV Show Pages**: Individual pages for TV shows (`/tv/{id}`)
+- **Season & Episode Info**: Number of seasons, episodes, and air dates
+- **Network Information**: Broadcasting networks with logos
+- **Created By**: Show creators and executive producers
+
+### ⭐ Favorites System
+
+- **Add/Remove Favorites**: Heart button on movie and TV show cards
+- **Persistent Storage**: Favorites saved to localStorage
+- **Favorites Page**: Dedicated page to view all favorited content
+- **Visual Indicators**: Clear favorite status indicators
+
+### 🔍 Search Functionality
+
+- **Multi-Category Search**: Search both movies and TV shows simultaneously
+- **Real-time Results**: Fast search with TMDB API integration
+- **Result Categories**: Separated movie and TV show results
+- **Search Persistence**: URL-based search queries
+
+### 🎯 Category Browsing
+
+- **Movie Categories**:
+  - Popular Movies
+  - Now Playing
+  - Upcoming
+  - Top Rated
+- **TV Show Categories**:
+  - Popular TV Shows
+  - On The Air
+  - Airing Today
+  - Top Rated
+
+### 🎨 User Experience
+
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Modern UI**: Dark theme with gradient backgrounds
+- **Loading States**: Smooth loading indicators
+- **Error Handling**: Custom 404 and error pages
+- **SEO Optimized**: Meta tags and structured data
+- **Navigation**: Intuitive navbar with dropdowns
 
 ## Tech Stack
 

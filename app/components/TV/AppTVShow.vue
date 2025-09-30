@@ -6,7 +6,7 @@ import { useFavoritesStore } from "~/composables/favorites";
 defineProps({
   name: {
     type: String,
-    default: "Movie Name",
+    default: "TV Show Name",
   },
   date: {
     type: String,
@@ -45,7 +45,7 @@ const favoritesStore = useFavoritesStore();
       <img v-else src="/star-black.svg" class="w-4 h-4" alt="Not favorite">
     </button>
     
-    <NuxtLink :to="`/movies/${id}`" class="block hover:opacity-80 transition-opacity">
+    <NuxtLink :to="`/tv/${id}`" class="block hover:opacity-80 transition-opacity">
       <div class="mb-2">
         <AppImage :src="imageUrl" class="w-full h-auto rounded-md" />
       </div>
