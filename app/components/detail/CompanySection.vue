@@ -5,7 +5,7 @@
       <div
         v-for="company in companies"
         :key="company.id"
-        class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg"
+        class="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg w-full max-w-72"
       >
         <AppImage
           v-if="company.logo_path"

@@ -200,4 +200,174 @@ NUXT_PUBLIC_TMDB_API_KEY=your_tmdb_api_key
 VITE_API_KEY=your_tmdb_api_key
 ```
 
+## 🐳 Docker Deployment
+
+This application is fully containerized with Docker for easy deployment and development. A comprehensive Makefile is provided for streamlined Docker operations.
+
+### Prerequisites
+
+1. [Docker](https://docs.docker.com/get-docker/) installed on your system
+2. [Docker Compose](https://docs.docker.com/compose/install/) (usually included with Docker Desktop)
+3. [Make](https://www.gnu.org/software/make/) (usually pre-installed on macOS/Linux)
+4. TMDB API key from [The Movie Database](https://www.themoviedb.org/settings/api)
+
+### Environment Setup
+
+1. Copy the environment file and add your TMDB API key:
+
+```bash
+cp .env.example .env
+```
+
+2. Edit `.env` and replace `your_tmdb_api_key_here` with your actual TMDB API key:
+
+```bash
+TMDB_API_KEY=your_actual_api_key_here
+```
+
+### Production Deployment
+
+Build and run the production version:
+
+```bash
+# Using Makefile (recommended)
+make setup        # Setup environment file
+make prod-start   # Build and start production container
+
+# View logs
+make prod-logs
+
+# Stop the container
+make prod-stop
+
+# Or using Docker Compose directly
+docker-compose up -d
+docker-compose logs -f
+docker-compose down
+```
+
+The application will be available at `http://localhost:3000`
+
+### Development with Docker
+
+For development with hot reloading:
+
+```bash
+# Using Makefile (recommended)
+make setup        # Setup environment file (if not done already)
+make dev-start    # Start development environment
+
+# View logs
+make dev-logs
+
+# Stop development environment
+make dev-stop
+
+# Or using Docker Compose directly
+docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.dev.yml logs -f
+docker-compose -f docker-compose.dev.yml down
+```
+
+Development server runs at `http://localhost:3000` with hot reloading enabled.
+
+### Using Makefile Commands
+
+The project includes a comprehensive Makefile for easy Docker operations:
+
+```bash
+# Show all available commands
+make help
+
+# Setup environment file
+make setup
+
+# Production commands
+make prod-build      # Build production container
+make prod-start      # Start production environment
+make prod-stop       # Stop production environment
+make prod-logs       # View production logs
+make prod-restart    # Restart production environment
+
+# Development commands
+make dev-start       # Start development environment
+make dev-stop        # Stop development environment
+make dev-logs        # View development logs
+make dev-restart     # Restart development environment
+
+# Utility commands
+make status          # Show container status
+make shell           # Open shell in production container
+make dev-shell       # Open shell in development container
+make cleanup         # Clean up all Docker resources
+make build-all       # Build both environments
+make stop-all        # Stop all environments
+make health          # Check application health
+make logs-all        # Show logs for all containers
+```
+
+### Direct Docker Commands
+
+You can also use Docker Compose directly:
+
+```bash
+# Build only
+docker-compose build
+
+# Rebuild without cache
+docker-compose build --no-cache
+
+# Run in foreground (see logs directly)
+docker-compose up
+
+# Scale the application (multiple instances)
+docker-compose up -d --scale movie-app=3
+
+# View container status
+docker-compose ps
+
+# Execute commands in running container
+docker-compose exec movie-app sh
+
+# Remove containers and volumes
+docker-compose down -v
+```
+
+### Docker Files Structure
+
+- `Makefile` - Docker command automation and shortcuts
+- `Dockerfile` - Production container configuration
+- `Dockerfile.dev` - Development container with dev dependencies
+- `docker-compose.yml` - Production orchestration
+- `docker-compose.dev.yml` - Development orchestration
+- `.dockerignore` - Files to exclude from Docker context
+
+### Troubleshooting
+
+**Port already in use:**
+
+```bash
+# Check what's using port 3000
+lsof -i :3000
+
+# Use different port
+docker-compose up -d -p 3001:3000
+```
+
+**Container won't start:**
+
+```bash
+# Check logs
+docker-compose logs movie-app
+
+# Rebuild container
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+**API key issues:**
+
+- Ensure your `.env` file has the correct TMDB API key
+- Restart containers after changing environment variables
+
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
