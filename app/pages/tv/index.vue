@@ -38,14 +38,14 @@
 
 <script setup lang="ts">
 useHead({
-  title: 'TV Shows - Movie Database',
+  title: "TV Shows - Movie Database",
   meta: [
     {
-      name: 'description',
-      content: 'Discover popular, top-rated, and currently airing TV shows'
-    }
-  ]
-})
+      name: "description",
+      content: "Discover popular, top-rated, and currently airing TV shows",
+    },
+  ],
+});
 </script>
 
 <style scoped>

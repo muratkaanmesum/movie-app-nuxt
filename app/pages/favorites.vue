@@ -2,20 +2,22 @@
   <div class="main-background min-h-screen text-white">
     <div class="container mx-auto px-4 py-8">
       <h1 class="text-4xl font-bold mb-8">My Favorites</h1>
-      
+
       <div v-if="favoriteIds.length === 0" class="text-center py-16">
         <div class="text-6xl mb-4">💔</div>
         <h2 class="text-2xl font-bold mb-4">No Favorites Yet</h2>
-        <p class="text-gray-400 mb-8">Start adding movies and TV shows to your favorites!</p>
+        <p class="text-gray-400 mb-8">
+          Start adding movies and TV shows to your favorites!
+        </p>
         <div class="flex gap-4 justify-center">
-          <NuxtLink 
-            to="/movies" 
+          <NuxtLink
+            to="/movies"
             class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition-colors"
           >
             Browse Movies
           </NuxtLink>
-          <NuxtLink 
-            to="/tv" 
+          <NuxtLink
+            to="/tv"
             class="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg transition-colors"
           >
             Browse TV Shows
@@ -26,13 +28,17 @@
       <div v-else>
         <div class="mb-8">
           <p class="text-gray-400">
-            You have {{ favoriteIds.length }} favorite{{ favoriteIds.length > 1 ? 's' : '' }}
+            You have {{ favoriteIds.length }} favorite{{
+              favoriteIds.length > 1 ? "s" : ""
+            }}
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          <div 
-            v-for="favoriteId in favoriteIds" 
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+        >
+          <div
+            v-for="favoriteId in favoriteIds"
             :key="favoriteId"
             class="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-colors"
           >
@@ -46,15 +52,15 @@
                 <Icon name="mdi:heart-remove" class="w-5 h-5" />
               </button>
             </div>
-            
+
             <div class="flex gap-2">
-              <NuxtLink 
+              <NuxtLink
                 :to="`/movies/${favoriteId}`"
                 class="flex-1 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-sm text-center transition-colors"
               >
                 View as Movie
               </NuxtLink>
-              <NuxtLink 
+              <NuxtLink
                 :to="`/tv/${favoriteId}`"
                 class="flex-1 bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-sm text-center transition-colors"
               >
@@ -78,26 +84,30 @@
 </template>
 
 <script setup lang="ts">
-import { useFavoritesStore } from '~/composables/favorites'
+import { useFavoritesStore } from "~/composables/favorites";
 
-const { favoriteIds, removeFavorite } = useFavoritesStore()
+const { favoriteIds, removeFavorite } = useFavoritesStore();
 
 const clearAllFavorites = () => {
-  if (confirm('Are you sure you want to remove all favorites? This action cannot be undone.')) {
-    favoriteIds.value = []
+  if (
+    confirm(
+      "Are you sure you want to remove all favorites? This action cannot be undone."
+    )
+  ) {
+    favoriteIds.value = [];
   }
-}
+};
 
 // SEO
 useHead({
-  title: 'My Favorites - Movie Database',
+  title: "My Favorites - Movie Database",
   meta: [
     {
-      name: 'description',
-      content: 'View and manage your favorite movies and TV shows'
-    }
-  ]
-})
+      name: "description",
+      content: "View and manage your favorite movies and TV shows",
+    },
+  ],
+});
 </script>
 
 <style scoped>

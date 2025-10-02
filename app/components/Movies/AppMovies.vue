@@ -55,7 +55,7 @@ onUnmounted(() => {
             :name="movie.original_title"
             :date="movie.release_date"
             :image-url="`https://image.tmdb.org/t/p/w220_and_h330_face/${movie.poster_path}`"
-            :rating="Math.ceil(movie.vote_average * 10)"
+            :rating="Math.round(movie.vote_average * 10)"
           />
         </div>
       </div>

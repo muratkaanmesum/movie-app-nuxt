@@ -41,11 +41,14 @@ const favoritesStore = useFavoritesStore();
         src="/star-blue.svg"
         class="w-4 h-4"
         alt="Favorite"
-      >
-      <img v-else src="/star-black.svg" class="w-4 h-4" alt="Not favorite">
+      />
+      <img v-else src="/star-black.svg" class="w-4 h-4" alt="Not favorite" />
     </button>
-    
-    <NuxtLink :to="`/tv/${id}`" class="block hover:opacity-80 transition-opacity">
+
+    <NuxtLink
+      :to="`/tv/${id}`"
+      class="block hover:opacity-80 transition-opacity"
+    >
       <div class="mb-2">
         <AppImage :src="imageUrl" class="w-full h-auto rounded-md" />
       </div>

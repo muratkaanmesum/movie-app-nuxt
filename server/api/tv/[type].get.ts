@@ -1,7 +1,7 @@
 export default defineEventHandler(async (event) => {
-  const { type } = getRouterParams(event)
-  const query = getQuery(event)
-  const config = useRuntimeConfig()
+  const { type } = getRouterParams(event);
+  const query = getQuery(event);
+  const config = useRuntimeConfig();
 
   try {
     const response = await $fetch(`https://api.themoviedb.org/3/tv/${type}`, {
@@ -14,14 +14,14 @@ export default defineEventHandler(async (event) => {
       headers: {
         accept: "application/json",
       },
-    })
+    });
 
-    return response
+    return response;
   } catch (error) {
-    console.error('TV API Error:', error)
+    console.error("TV API Error:", error);
     throw createError({
       statusCode: 500,
-      statusMessage: 'Failed to fetch TV shows'
-    })
+      statusMessage: "Failed to fetch TV shows",
+    });
   }
-})
+});
