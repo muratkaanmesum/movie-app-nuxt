@@ -1,9 +1,9 @@
-FROM node:18-alpine
+FROM node:20
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production --legacy-peer-deps --silent && npm cache clean --force
 
 COPY . .
 RUN npm run build
