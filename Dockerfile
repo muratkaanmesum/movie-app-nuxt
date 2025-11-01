@@ -2,10 +2,17 @@ FROM node:20
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
-RUN npm ci --only=production --legacy-peer-deps --silent && npm cache clean --force
 
+# Install all dependencies (including devDependencies for build)
+# Remove --silent flag to see progress
+RUN npm ci --legacy-peer-deps && npm cache clean --force
+
+# Copy application code
 COPY . .
+
+# Build the application
 RUN npm run build
 
 EXPOSE 3000

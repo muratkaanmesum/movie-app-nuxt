@@ -13,3 +13,14 @@ coverage
 dist
 .output
 .nuxt
+README.md
+*.md
+!DEPLOYMENT.md
+!README-DEPLOYMENT.md
+DEPLOY-TO-EC2.md
+EC2-DOCKER-SETUP.md
+nginx/ssl/*.pem
+nginx/certbot
+scripts/
+ec2-user-data.sh
+aws-security-group.json
