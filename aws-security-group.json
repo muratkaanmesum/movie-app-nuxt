@@ -1,0 +1,51 @@
+{
+  "GroupName": "movie-app-sg",
+  "Description": "Security group for movie app with nginx HTTPS",
+  "VpcId": "",
+  "IpPermissions": [
+    {
+      "IpProtocol": "tcp",
+      "FromPort": 22,
+      "ToPort": 22,
+      "IpRanges": [
+        {
+          "CidrIp": "0.0.0.0/0",
+          "Description": "SSH access - Restrict to your IP in production"
+        }
+      ]
+    },
+    {
+      "IpProtocol": "tcp",
+      "FromPort": 80,
+      "ToPort": 80,
+      "IpRanges": [
+        {
+          "CidrIp": "0.0.0.0/0",
+          "Description": "HTTP access for Let's Encrypt and redirect to HTTPS"
+        }
+      ]
+    },
+    {
+      "IpProtocol": "tcp",
+      "FromPort": 443,
+      "ToPort": 443,
+      "IpRanges": [
+        {
+          "CidrIp": "0.0.0.0/0",
+          "Description": "HTTPS access"
+        }
+      ]
+    }
+  ],
+  "Tags": [
+    {
+      "Key": "Name",
+      "Value": "movie-app-security-group"
+    },
+    {
+      "Key": "Project",
+      "Value": "movie-app"
+    }
+  ]
+}
+

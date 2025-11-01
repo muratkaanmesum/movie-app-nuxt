@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: nuxt-movie-app
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
       - NUXT_PUBLIC_TMDB_API_KEY=${NUXT_PUBLIC_TMDB_API_KEY:-your_tmdb_api_key_here}
@@ -15,8 +15,27 @@ services:
     networks:
       - movie-app-network
 
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/certbot:/var/www/certbot:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - movie-app
+    restart: unless-stopped
+    networks:
+      - movie-app-network
+
 volumes:
   node_modules:
+  nginx-logs:
 
 networks:
   movie-app-network:
