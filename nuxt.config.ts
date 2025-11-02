@@ -9,6 +9,10 @@ export default defineNuxtConfig({
   // Nitro configuration for server-side rendering
   nitro: {
     preset: "node-server", // Use node-server for better SSR support
+    minify: true, // Minify output for production
+    compressPublicAssets: true, // Compress public assets
+    // Optimize build time (optional)
+    // parallel: true, // Enable parallel builds if available
   },
 
   modules: [
