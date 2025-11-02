@@ -6,6 +6,11 @@
 #   ./scripts/deploy.sh --local-build                     # Build locally first (faster)
 #   ./scripts/deploy.sh --setup-ssl domain.com email@domain.com
 #   ./scripts/deploy.sh --timeout 1800                     # Set build timeout
+#
+# Examples:
+#   ./scripts/deploy.sh --ec2 16.16.198.187 ~/.ssh/my-key.pem ubuntu
+#   ./scripts/deploy.sh --ec2 16.16.198.187 ~/.ssh/id_rsa ubuntu
+#   ./scripts/deploy.sh --ec2 16.16.198.187 /path/to/key.pem ubuntu
 
 set -e
 
@@ -355,10 +360,37 @@ deploy_to_ec2() {
         exit 1
     fi
     
+    # Expand tilde in key path
+    EC2_KEY=$(eval echo "$EC2_KEY")
+    
     # Check if key file exists
     if [ ! -f "$EC2_KEY" ]; then
         echo "❌ SSH key file not found: $EC2_KEY"
+        echo ""
+        echo "💡 Make sure to provide the correct path to your SSH key:"
+        echo "   ./scripts/deploy.sh --ec2 16.16.198.187 ~/.ssh/your-actual-key.pem ubuntu"
+        echo ""
+        echo "   Common locations:"
+        echo "   - ~/.ssh/id_rsa"
+        echo "   - ~/.ssh/your-key-name.pem"
+        echo "   - ~/.ssh/ec2-key.pem"
+        echo ""
+        echo "   Or use full path:"
+        echo "   ./scripts/deploy.sh --ec2 16.16.198.187 /path/to/your-key.pem ubuntu"
         exit 1
+    fi
+    
+    # Verify key file permissions
+    KEY_PERMS=$(stat -c "%a" "$EC2_KEY" 2>/dev/null || stat -f "%OLp" "$EC2_KEY" 2>/dev/null || echo "")
+    if [ "$KEY_PERMS" != "400" ] && [ "$KEY_PERMS" != "600" ]; then
+        echo "⚠️  Warning: SSH key permissions should be 400 or 600"
+        echo "   Current: $KEY_PERMS"
+        echo "   Fix with: chmod 400 $EC2_KEY"
+        read -p "Continue anyway? (y/n) " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
     fi
     
     # Test SSH connection
@@ -427,15 +459,47 @@ deploy_to_ec2() {
         # Generate self-signed certificate if it doesn't exist
         if [ ! -f "nginx/ssl/cert.pem" ] || [ ! -f "nginx/ssl/key.pem" ]; then
             echo "🔒 Generating self-signed certificate..."
+            # Use EC2 public IP or hostname in certificate
+            EC2_IP=\$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo "$EC2_IP")
+            echo "   Using IP: \$EC2_IP"
             openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
                 -keyout nginx/ssl/key.pem \
                 -out nginx/ssl/cert.pem \
-                -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost" 2>/dev/null || \
+                -subj "/C=US/ST=State/L=City/O=Organization/CN=\$EC2_IP" 2>/dev/null || \
             sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
                 -keyout nginx/ssl/key.pem \
                 -out nginx/ssl/cert.pem \
-                -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+                -subj "/C=US/ST=State/L=City/O=Organization/CN=\$EC2_IP"
             sudo chown -R \$USER:\$USER nginx/ssl/ 2>/dev/null || true
+            
+            # Verify certificates were created
+            if [ -f "nginx/ssl/cert.pem" ] && [ -f "nginx/ssl/key.pem" ]; then
+                echo "✅ SSL certificates created successfully"
+                # Set correct permissions
+                chmod 644 nginx/ssl/cert.pem
+                chmod 600 nginx/ssl/key.pem
+                # Verify certificate
+                openssl x509 -in nginx/ssl/cert.pem -noout -subject 2>/dev/null || echo "⚠️  Certificate created but may be invalid"
+            else
+                echo "❌ Failed to create SSL certificates"
+            fi
+        else
+            echo "✅ SSL certificates already exist"
+            # Verify certificate validity
+            CERT_SUBJECT=\$(openssl x509 -in nginx/ssl/cert.pem -noout -subject 2>/dev/null | grep -o "CN=[^,]*" || echo "invalid")
+            echo "   Certificate: \$CERT_SUBJECT"
+            if ! openssl x509 -in nginx/ssl/cert.pem -noout -checkend 0 2>/dev/null; then
+                echo "⚠️  Certificate expired or invalid, regenerating..."
+                rm -f nginx/ssl/*.pem
+                # Regenerate
+                EC2_IP=\$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo "$EC2_IP")
+                openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                    -keyout nginx/ssl/key.pem \
+                    -out nginx/ssl/cert.pem \
+                    -subj "/C=US/ST=State/L=City/O=Organization/CN=\$EC2_IP"
+                chmod 644 nginx/ssl/cert.pem
+                chmod 600 nginx/ssl/key.pem
+            fi
         fi
         
         # Deploy
@@ -497,8 +561,11 @@ deploy_to_ec2() {
         echo ""
         echo "✅ Deployment on EC2 complete!"
         echo "🌐 Your app should be available at:"
-        echo "   HTTP:  http://$EC2_IP"
+        echo "   HTTP:  http://$EC2_IP (redirects to HTTPS)"
         echo "   HTTPS: https://$EC2_IP"
+        echo ""
+        echo "⚠️  Note: Browser will show security warning for self-signed certificate"
+        echo "   Click 'Advanced' → 'Proceed to site' to access"
         echo ""
         echo "📊 View logs: docker-compose logs -f"
 EOF
