@@ -1,4 +1,6 @@
-FROM node:20
+# Multi-stage Dockerfile with builder pattern
+# Stage 1: Builder (install dependencies and build)
+FROM node:20 AS builder
 
 WORKDIR /app
 
@@ -24,8 +26,26 @@ ENV NITRO_PRESET=node-server
 # Nitro build can take 2-5 minutes depending on app size
 RUN npm run build || (echo "Build failed. Check logs above." && exit 1)
 
-EXPOSE 3000
+# Stage 2: Production (smaller image with only runtime dependencies)
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Set environment variables
+ENV NODE_ENV=production
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
 
-CMD ["npm", "run", "start"]
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm install --only=production --legacy-peer-deps && \
+    npm cache clean --force
+
+# Copy built application from builder stage
+COPY --from=builder /app/.output ./.output
+
+EXPOSE 3000
+
+CMD ["node", ".output/server/index.mjs"]

@@ -226,12 +226,20 @@ build_docker() {
     export DOCKER_BUILDKIT=1
     export COMPOSE_DOCKER_CLI_BUILD=1
     
-    # Build based on local build option
-    if [ "$LOCAL_BUILD" = true ] && [ -f "Dockerfile.local-build" ]; then
+    # Build based on local build option or if .output exists
+    if [ "$LOCAL_BUILD" = true ] || [ -d ".output" ]; then
         echo "🐳 Building Docker image with pre-built app..."
-        docker build -f Dockerfile.local-build -t movie-app-nuxt:local-build .
-        docker tag movie-app-nuxt:local-build movie-app-nuxt:latest 2>/dev/null || true
-        docker-compose build --progress=plain 2>&1 | grep -v "movie-app" || true
+        # Use fallback Dockerfile if .output exists
+        if [ -d ".output" ]; then
+            echo "✅ Found pre-built .output, using fallback Dockerfile..."
+            docker build -f Dockerfile.fallback -t movie-app-nuxt-movie-app:latest . || {
+                echo "⚠️  Fallback build failed, trying full build..."
+                docker-compose build --progress=plain --no-cache
+            }
+        elif [ -f "Dockerfile.local-build" ]; then
+            docker build -f Dockerfile.local-build -t movie-app-nuxt:local-build .
+            docker tag movie-app-nuxt:local-build movie-app-nuxt:latest 2>/dev/null || true
+        fi
     else
         # Build with progress output and optional timeout
         echo "⏳ Building (watching for progress)..."
@@ -273,19 +281,33 @@ build_docker() {
         
         if [ ${BUILD_EXIT:-1} -ne 0 ]; then
             echo ""
-            echo "❌ Build failed. Common issues:"
-            echo "   - Network issues: npm cannot download packages"
-            echo "   - Disk space: Check available disk space"
-            echo "   - Memory: Docker may need more memory (increase in Docker Desktop)"
-            echo "   - Timeout: Nuxt build took too long"
-            echo ""
-            echo "💡 Troubleshooting:"
-            echo "   1. Check Docker resources (Docker Desktop → Settings → Resources)"
-            echo "   2. Try: ./scripts/deploy.sh --local-build"
-            echo "   3. Try: ./scripts/deploy.sh --timeout 3600"
-            echo "   4. Build without cache: docker-compose build --no-cache --progress=plain"
-            rm -f $BUILD_LOG
-            echo "FAILED" > /tmp/deploy_status
+            echo "⚠️  Full build failed, checking for fallback..."
+            
+            # Try fallback if .output exists or can be built locally
+            if [ -d ".output" ]; then
+                echo "✅ Found pre-built .output, trying fallback Dockerfile..."
+                if docker build -f Dockerfile.fallback -t movie-app-nuxt-movie-app:latest .; then
+                    echo "✅ Fallback build succeeded!"
+                    echo "SUCCESS" > /tmp/deploy_status
+                else
+                    echo "❌ Fallback build also failed"
+                    echo "FAILED" > /tmp/deploy_status
+                fi
+            else
+                echo "❌ Build failed. Common issues:"
+                echo "   - Network issues: npm cannot download packages"
+                echo "   - Disk space: Check available disk space"
+                echo "   - Memory: Docker may need more memory (increase in Docker Desktop)"
+                echo "   - Timeout: Nuxt build took too long"
+                echo ""
+                echo "💡 Troubleshooting:"
+                echo "   1. Build locally first: npm install && npm run build"
+                echo "   2. Then deploy: ./scripts/deploy.sh (will use pre-built .output)"
+                echo "   3. Or try: ./scripts/deploy.sh --local-build"
+                echo "   4. Or increase timeout: ./scripts/deploy.sh --timeout 3600"
+                rm -f $BUILD_LOG
+                echo "FAILED" > /tmp/deploy_status
+            fi
         else
             echo "SUCCESS" > /tmp/deploy_status
         fi
@@ -432,8 +454,36 @@ deploy_to_ec2() {
         npm list --depth=0 2>/dev/null | grep -E "(tailwindcss|@nuxt)" || echo "Note: Running in Docker will install dependencies"
         
         echo "🔨 Building Docker images..."
-        # Build without cache to ensure fresh install
-        docker-compose build --progress=plain --no-cache --pull
+        
+        # Check if .output exists (pre-built locally)
+        if [ -d ".output" ]; then
+            echo "✅ Found pre-built .output directory, using fallback Dockerfile..."
+            # Use fallback Dockerfile that doesn't need to build
+            if docker build -f Dockerfile.fallback -t movie-app-nuxt-movie-app:latest .; then
+                echo "✅ Fallback build succeeded!"
+            else
+                echo "⚠️  Fallback build failed, trying full build..."
+                docker-compose build --progress=plain --no-cache --pull || {
+                    echo "❌ All builds failed"
+                    exit 1
+                }
+            fi
+        else
+            echo "🔨 Building from source (this may take 2-5 minutes)..."
+            # Build without cache to ensure fresh install
+            if ! docker-compose build --progress=plain --no-cache --pull; then
+                echo "❌ Full build failed. Trying to build locally first..."
+                echo "   Building locally to create .output..."
+                npm install --legacy-peer-deps && npm run build && \
+                docker build -f Dockerfile.fallback -t movie-app-nuxt-movie-app:latest . || {
+                    echo "❌ All builds failed. Manual steps:"
+                    echo "   1. npm install --legacy-peer-deps"
+                    echo "   2. npm run build"
+                    echo "   3. Deploy again"
+                    exit 1
+                }
+            fi
+        fi
         
         echo "🚀 Starting services..."
         docker-compose up -d

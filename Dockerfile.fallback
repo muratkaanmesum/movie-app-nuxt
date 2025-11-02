@@ -1,0 +1,25 @@
+# Fallback Dockerfile - uses pre-built .output if it exists
+# This is used when .output directory exists (built locally)
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV NUXT_HOST=0.0.0.0
+ENV NUXT_PORT=3000
+
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm install --only=production --legacy-peer-deps && \
+    npm cache clean --force
+
+# Copy pre-built application if it exists
+COPY .output ./.output
+
+EXPOSE 3000
+
+CMD ["node", ".output/server/index.mjs"]
+
