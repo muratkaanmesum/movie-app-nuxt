@@ -13,6 +13,9 @@ coverage
 dist
 .output
 .nuxt
+*.md
+!DEPLOYMENT.md
+!README-DEPLOYMENT.md
 README.md
 *.md
 !DEPLOYMENT.md

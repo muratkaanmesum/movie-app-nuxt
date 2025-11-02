@@ -365,6 +365,7 @@ deploy_to_ec2() {
         --exclude '.env.*' \
         --exclude 'nginx/ssl/*.pem' \
         --exclude '.DS_Store' \
+        --include 'package-lock.json' \
         ./ "$EC2_USER@$EC2_IP:~/movie-app-nuxt/"
     
     echo "✅ Files transferred!"
@@ -419,7 +420,22 @@ deploy_to_ec2() {
         echo "🚀 Starting services..."
         export NUXT_PUBLIC_TMDB_API_KEY=\${NUXT_PUBLIC_TMDB_API_KEY:-your_tmdb_api_key_here}
         docker-compose down 2>/dev/null || true
-        docker-compose build --progress=plain
+        
+        # Ensure package-lock.json exists before building
+        if [ ! -f "package-lock.json" ]; then
+            echo "📦 Generating package-lock.json..."
+            npm install --legacy-peer-deps --package-lock-only
+        fi
+        
+        # Verify dependencies are correct
+        echo "📋 Verifying dependencies..."
+        npm list --depth=0 2>/dev/null | grep -E "(tailwindcss|@nuxt)" || echo "Note: Running in Docker will install dependencies"
+        
+        echo "🔨 Building Docker images..."
+        # Build without cache to ensure fresh install
+        docker-compose build --progress=plain --no-cache --pull
+        
+        echo "🚀 Starting services..."
         docker-compose up -d
         
         echo "⏳ Waiting for services to start..."
