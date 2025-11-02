@@ -40,32 +40,39 @@
           <div
             v-for="favoriteId in favoriteIds"
             :key="favoriteId"
-            class="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-colors"
+            class="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors group"
           >
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold">ID: {{ favoriteId }}</h3>
-              <button
-                class="text-red-400 hover:text-red-300 transition-colors"
-                title="Remove from favorites"
-                @click="removeFavorite(favoriteId)"
-              >
-                <Icon name="mdi:heart-remove" class="w-5 h-5" />
-              </button>
-            </div>
-
-            <div class="flex gap-2">
-              <NuxtLink
-                :to="`/movies/${favoriteId}`"
-                class="flex-1 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-sm text-center transition-colors"
-              >
-                View as Movie
-              </NuxtLink>
-              <NuxtLink
-                :to="`/tv/${favoriteId}`"
-                class="flex-1 bg-green-600 hover:bg-green-700 px-3 py-2 rounded text-sm text-center transition-colors"
-              >
-                View as TV Show
-              </NuxtLink>
+            <NuxtLink :to="`/movies/${favoriteId}`" class="block">
+              <div class="aspect-[2/3] bg-gray-900 relative">
+                <img
+                  v-if="favoriteMovies[favoriteId]?.poster_path"
+                  :src="`https://image.tmdb.org/t/p/w500${favoriteMovies[favoriteId].poster_path}`"
+                  :alt="favoriteMovies[favoriteId]?.title || favoriteMovies[favoriteId]?.name"
+                  class="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
+                  loading="lazy"
+                />
+                <div
+                  v-else
+                  class="w-full h-full flex items-center justify-center"
+                >
+                  <Icon name="mdi:image-off" class="w-12 h-12 text-gray-500" />
+                </div>
+                <button
+                  class="absolute top-2 right-2 bg-black/70 hover:bg-red-600 p-2 rounded-full transition-colors z-10"
+                  @click.stop="removeFavorite(favoriteId)"
+                  title="Remove from favorites"
+                >
+                  <Icon name="mdi:heart" class="w-5 h-5 text-red-400" />
+                </button>
+              </div>
+            </NuxtLink>
+            <div class="p-4">
+              <h3 class="font-semibold text-sm line-clamp-2 mb-2">
+                {{ favoriteMovies[favoriteId]?.title || favoriteMovies[favoriteId]?.name || `Movie ID: ${favoriteId}` }}
+              </h3>
+              <p v-if="favoriteMovies[favoriteId]?.release_date || favoriteMovies[favoriteId]?.first_air_date" class="text-xs text-gray-400">
+                {{ formatDate(favoriteMovies[favoriteId]?.release_date || favoriteMovies[favoriteId]?.first_air_date) }}
+              </p>
             </div>
           </div>
         </div>
@@ -88,6 +95,44 @@ import { useFavoritesStore } from "~/composables/favorites";
 
 const { favoriteIds, removeFavorite } = useFavoritesStore();
 
+// Fetch movie details for favorites
+const favoriteMovies = ref<Record<number, any>>({});
+
+const fetchMovieDetails = async (id: number) => {
+  if (favoriteMovies.value[id]) return; // Already fetched
+  
+  try {
+    // Try as movie first
+    const movieData = await $fetch(`/api/movies/details/${id}`);
+    if (movieData) {
+      favoriteMovies.value[id] = movieData;
+      return;
+    }
+  } catch (e) {
+    // Try as TV show
+    try {
+      const tvData = await $fetch(`/api/tv/details/${id}`);
+      if (tvData) {
+        favoriteMovies.value[id] = tvData;
+      }
+    } catch (e2) {
+      console.error(`Failed to fetch details for ID ${id}:`, e2);
+    }
+  }
+};
+
+// Fetch all favorite movie details
+watch(favoriteIds, async (newIds) => {
+  for (const id of newIds) {
+    await fetchMovieDetails(id);
+  }
+}, { immediate: true });
+
+const formatDate = (date: string) => {
+  if (!date) return '';
+  return new Date(date).getFullYear().toString();
+};
+
 const clearAllFavorites = () => {
   if (
     confirm(
@@ -95,6 +140,7 @@ const clearAllFavorites = () => {
     )
   ) {
     favoriteIds.value = [];
+    favoriteMovies.value = {};
   }
 };
 

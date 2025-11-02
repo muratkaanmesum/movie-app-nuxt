@@ -47,8 +47,16 @@ const navItems: NavItem[] = [
     path: "/favorites",
   },
   {
-    label: "More",
-    path: "/more",
+    label: "Watchlist",
+    path: "/watchlist",
+  },
+  {
+    label: "Trending",
+    path: "/trending",
+  },
+  {
+    label: "Recently Viewed",
+    path: "/recently-viewed",
   },
 ];
 </script>

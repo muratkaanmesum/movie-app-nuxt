@@ -41,6 +41,12 @@
           :is-favorite="isFavorite(movie.id)"
           @toggle-favorite="toggleFavorite"
         >
+          <template #watchlist-button>
+            <WatchlistButton
+              :item-id="movie.id"
+              @click="toggleWatchlistItem"
+            />
+          </template>
           <template #additional-info>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
@@ -71,6 +77,22 @@
 
         <CastCarousel :cast="movie.credits?.cast || []" />
         <VideoSection :videos="movie.videos || []" />
+        
+        <!-- Watch Providers -->
+        <WatchProviders 
+          v-if="watchProviders?.results?.US"
+          :providers="watchProviders.results.US"
+          region="US"
+        />
+        
+        <!-- Similar Movies -->
+        <SimilarContent
+          v-if="similarMovies?.results && similarMovies.results.length > 0"
+          :items="similarMovies.results"
+          type="movie"
+          title="Similar Movies"
+        />
+        
         <CompanySection
           :companies="movie.production_companies || []"
           title="Production Companies"
@@ -82,8 +104,13 @@
 
 <script setup lang="ts">
 import { useFavoritesStore } from "~/composables/favorites";
+import { useWatchlistStore } from "~/composables/watchlist";
+import { useRecentlyViewedStore } from "~/composables/recentlyViewed";
 import { useMovieDetails } from "~/composables/movieDetails";
 import { useDetailPage } from "~/composables/useDetailPage";
+import SimilarContent from "~/components/detail/SimilarContent.vue";
+import WatchProviders from "~/components/detail/WatchProviders.vue";
+import WatchlistButton from "~/components/common/WatchlistButton.vue";
 
 const route = useRoute();
 const movieId = computed(() => route.params.id as string);
@@ -91,10 +118,59 @@ const movieId = computed(() => route.params.id as string);
 const { movie, pending, error } = useMovieDetails(movieId.value);
 const { formatDate, formatRuntime, calculateRating } = useDetailPage();
 const { isFavorite, toggleFavorite: toggleFav } = useFavoritesStore();
+const { isInWatchlist, toggleWatchlist } = useWatchlistStore();
+const { addToRecentlyViewed } = useRecentlyViewedStore();
+
+// Fetch similar movies
+const { data: similarMovies, pending: similarPending } = await useFetch(
+  `/api/movies/similar/${movieId.value}`,
+  {
+    query: { page: 1 },
+    default: () => ({ results: [] }),
+  }
+);
+
+// Fetch watch providers
+const { data: watchProviders, pending: providersPending } = await useFetch(
+  `/api/movies/watch-providers/${movieId.value}`,
+  {
+    default: () => ({ results: {} }),
+  }
+);
+
+// Track recently viewed
+watch(movie, (newMovie) => {
+  if (newMovie) {
+    addToRecentlyViewed({
+      id: newMovie.id,
+      title: newMovie.title,
+      poster_path: newMovie.poster_path,
+      type: 'movie',
+    });
+  }
+}, { immediate: true });
+
+// Also track on mount if movie is already loaded
+onMounted(() => {
+  if (movie.value) {
+    addToRecentlyViewed({
+      id: movie.value.id,
+      title: movie.value.title,
+      poster_path: movie.value.poster_path,
+      type: 'movie',
+    });
+  }
+});
 
 const toggleFavorite = () => {
   if (movie.value) {
     toggleFav(movie.value.id);
+  }
+};
+
+const toggleWatchlistItem = () => {
+  if (movie.value) {
+    toggleWatchlist(movie.value.id);
   }
 };
 

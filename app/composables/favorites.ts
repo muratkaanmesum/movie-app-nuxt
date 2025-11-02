@@ -1,25 +1,31 @@
-export const useFavoritesStore = () => {
-  const favoriteIds = ref<number[]>([]);
+// Shared state - singleton pattern
+const favoriteIds = ref<number[]>([]);
 
-  // Load from localStorage on client side
-  if (import.meta.client) {
-    const saved = localStorage.getItem("favorites");
-    if (saved) {
+// Load from localStorage on client side (only once)
+if (import.meta.client) {
+  const saved = localStorage.getItem("favorites");
+  if (saved) {
+    try {
       favoriteIds.value = JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse favorites from localStorage:', e);
+      favoriteIds.value = [];
     }
   }
+}
 
-  // Watch for changes and save to localStorage
-  watch(
-    favoriteIds,
-    (newFavorites) => {
-      if (import.meta.client) {
-        localStorage.setItem("favorites", JSON.stringify(newFavorites));
-      }
-    },
-    { deep: true }
-  );
+// Watch for changes and save to localStorage
+watch(
+  favoriteIds,
+  (newFavorites) => {
+    if (import.meta.client) {
+      localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    }
+  },
+  { deep: true }
+);
 
+export const useFavoritesStore = () => {
   const getFavorites = computed(() => favoriteIds.value);
 
   const isFavorite = (movieId: number): boolean => {

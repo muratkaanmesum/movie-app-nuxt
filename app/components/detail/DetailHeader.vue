@@ -39,11 +39,14 @@
           </div>
         </div>
 
-        <FavoriteButton
-          :id="id"
-          :is-favorite="isFavorite"
-          @toggle="$emit('toggleFavorite')"
-        />
+        <div class="flex gap-3 items-center">
+          <FavoriteButton
+            :id="id"
+            :is-favorite="isFavorite"
+            @toggle="$emit('toggleFavorite')"
+          />
+          <slot name="watchlist-button" />
+        </div>
       </div>
 
       <UserScore :rating="rating" :vote-count="voteCount" />

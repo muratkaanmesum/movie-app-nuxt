@@ -241,9 +241,6 @@ build_docker() {
                 echo "⚠️  Fallback build failed, trying full build..."
                 docker-compose build --progress=plain --no-cache
             }
-        elif [ -f "Dockerfile.local-build" ]; then
-            docker build -f Dockerfile.local-build -t movie-app-nuxt:local-build .
-            docker tag movie-app-nuxt:local-build movie-app-nuxt:latest 2>/dev/null || true
         fi
     else
         # Build with progress output and optional timeout

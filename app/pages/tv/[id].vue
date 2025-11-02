@@ -22,6 +22,12 @@
         :is-favorite="isFavorite(tvShow.id)"
         @toggle-favorite="toggleFavorite"
       >
+        <template #watchlist-button>
+          <WatchlistButton
+            :item-id="tvShow.id"
+            @click="toggleWatchlistItem"
+          />
+        </template>
         <template #additional-info>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
@@ -66,6 +72,21 @@
       />
       <!-- Videos Section -->
       <VideoSection v-if="tvShow.videos?.length > 0" :videos="tvShow.videos" />
+      <!-- Watch Providers -->
+      <WatchProviders 
+        v-if="watchProviders?.results?.US"
+        :providers="watchProviders.results.US"
+        region="US"
+      />
+      
+      <!-- Similar TV Shows -->
+      <SimilarContent
+        v-if="similarShows?.results && similarShows.results.length > 0"
+        :items="similarShows.results"
+        type="tv"
+        title="Similar TV Shows"
+      />
+      
       <!-- Networks Section -->
       <CompanySection
         v-if="tvShow.networks?.length > 0"
@@ -89,13 +110,20 @@
 
 <script setup lang="ts">
 import { useFavoritesStore } from "~/composables/favorites";
+import { useWatchlistStore } from "~/composables/watchlist";
+import { useRecentlyViewedStore } from "~/composables/recentlyViewed";
 import { useDetailPage } from "~/composables/useDetailPage";
+import SimilarContent from "~/components/detail/SimilarContent.vue";
+import WatchProviders from "~/components/detail/WatchProviders.vue";
+import WatchlistButton from "~/components/common/WatchlistButton.vue";
 
 const route = useRoute();
 const tvShowId = route.params.id as string;
 
 const { formatDate, calculateRating } = useDetailPage();
 const { isFavorite, toggleFavorite: toggleFav } = useFavoritesStore();
+const { isInWatchlist, toggleWatchlist } = useWatchlistStore();
+const { addToRecentlyViewed } = useRecentlyViewedStore();
 
 const { data: tvShow, pending } = await useFetch(
   `/api/tv/details/${tvShowId}`,
@@ -104,9 +132,56 @@ const { data: tvShow, pending } = await useFetch(
   }
 );
 
+// Fetch similar TV shows
+const { data: similarShows, pending: similarPending } = await useFetch(
+  `/api/tv/similar/${tvShowId}`,
+  {
+    query: { page: 1 },
+    default: () => ({ results: [] }),
+  }
+);
+
+// Fetch watch providers
+const { data: watchProviders, pending: providersPending } = await useFetch(
+  `/api/tv/watch-providers/${tvShowId}`,
+  {
+    default: () => ({ results: {} }),
+  }
+);
+
+// Track recently viewed
+watch(tvShow, (newShow) => {
+  if (newShow) {
+    addToRecentlyViewed({
+      id: newShow.id,
+      title: newShow.name,
+      poster_path: newShow.poster_path,
+      type: 'tv',
+    });
+  }
+}, { immediate: true });
+
+// Also track on mount if tvShow is already loaded
+onMounted(() => {
+  if (tvShow.value) {
+    addToRecentlyViewed({
+      id: tvShow.value.id,
+      title: tvShow.value.name,
+      poster_path: tvShow.value.poster_path,
+      type: 'tv',
+    });
+  }
+});
+
 const toggleFavorite = () => {
   if (tvShow.value) {
     toggleFav(tvShow.value.id);
+  }
+};
+
+const toggleWatchlistItem = () => {
+  if (tvShow.value) {
+    toggleWatchlist(tvShow.value.id);
   }
 };
 
