@@ -85,7 +85,11 @@
           <AppTVShow
             v-for="show in trending.results"
             :key="show.id"
-            :show="show"
+            :id="show.id"
+            :name="show.name || show.original_name"
+            :date="show.first_air_date || ''"
+            :image-url="show.poster_path ? `https://image.tmdb.org/t/p/w500${show.poster_path}` : ''"
+            :rating="show.vote_average ? Math.round(show.vote_average * 10) : 0"
           />
         </div>
 
